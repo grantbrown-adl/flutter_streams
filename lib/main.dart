@@ -33,6 +33,28 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   List<dynamic> dataList = [];
+  StreamController streamController = StreamController.broadcast();
+
+  @override
+  void initState() {
+    streamController = StreamController.broadcast();
+    setupData();
+    super.initState();
+  }
+
+  setupData() async {
+    Stream stream = await getData()
+      ..pipe(streamController);
+
+    stream.listen((event) {
+      setState(() => dataList.add(event));
+    });
+  }
+
+  void dispose() {
+    super.dispose();
+    streamController.close();
+  }
 
   @override
   Widget build(BuildContext context) {
