@@ -32,7 +32,7 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  List<dynamic> dataList = [];
+  List<dynamic> streamList = [];
   StreamController streamController = StreamController.broadcast();
 
   @override
@@ -47,10 +47,11 @@ class _MyHomePageState extends State<MyHomePage> {
       ..pipe(streamController);
 
     stream.listen((event) {
-      setState(() => dataList.add(event));
+      setState(() => streamList.add(event));
     });
   }
 
+  @override
   void dispose() {
     super.dispose();
     streamController.close();
@@ -61,12 +62,27 @@ class _MyHomePageState extends State<MyHomePage> {
     return Scaffold(
       appBar: AppBar(
         title: const Center(
-          child: Text("Multi-Item List"),
+          child: Text("Streaming"),
         ),
       ),
       body: ListView.builder(
-        itemCount: dataList.length,
+        itemCount: streamList.length,
         itemBuilder: ((context, index) {
+          final item = streamList[index];
+
+          if (item is Post) {
+            return ListTile(
+              title: Text('Title: ${item.title}'),
+              subtitle: Text('Body: ${item.body}'),
+            );
+          }
+
+          if (item is Photo) {
+            return ListTile(
+              title: Text('Title: ${item.title}'),
+              subtitle: Text('url: ${item.url}'),
+            );
+          }
           return const SizedBox.shrink();
         }),
       ),
@@ -101,7 +117,6 @@ Future<Stream> getData() async {
 
   Stream streamOne = LazyStream(() async => await getPhotos(client));
   Stream streamTwo = LazyStream(() async => await getPosts(client));
-
   return StreamGroup.merge([streamOne, streamTwo]).asBroadcastStream();
 }
 
